@@ -32,13 +32,19 @@ export function TransactionsList({ transactions }: TransactionsListProps) {
     return Wallet;
   };
 
+  // Защита от не-массивов
+  const safeTransactions = Array.isArray(transactions) ? transactions : [];
+
   return (
     <Card>
       <h2 className="text-xl font-semibold mb-4">Транзакции</h2>
       <div className="space-y-3">
-        {transactions.map((transaction) => {
-          const Icon = getCategoryIcon(transaction.category);
-          return (
+        {safeTransactions.length === 0 ? (
+          <p className="text-gray-500 text-center py-4">Нет транзакций</p>
+        ) : (
+          safeTransactions.map((transaction) => {
+            const Icon = getCategoryIcon(transaction.category);
+            return (
             <div
               key={transaction.id}
               className="flex justify-between items-center p-3 border rounded-lg"
@@ -69,8 +75,9 @@ export function TransactionsList({ transactions }: TransactionsListProps) {
                 {formatCurrency(transaction.amount)}
               </p>
             </div>
-          );
-        })}
+            );
+          })
+        )}
       </div>
     </Card>
   );

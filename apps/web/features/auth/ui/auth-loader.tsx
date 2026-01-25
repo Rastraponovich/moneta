@@ -3,13 +3,14 @@
 import { ReactNode } from "react";
 
 import { useAuth } from "../model/auth-context";
+import { UserHeader } from "@/widgets/user-header";
 
 interface AuthLoaderProps {
   children: ReactNode;
 }
 
 export function AuthLoader({ children }: AuthLoaderProps) {
-  const { isLoading } = useAuth();
+  const { isLoading, user } = useAuth();
 
   if (isLoading) {
     return (
@@ -22,5 +23,10 @@ export function AuthLoader({ children }: AuthLoaderProps) {
     );
   }
 
-  return <>{children}</>;
+  return (
+    <>
+      {user && <UserHeader />}
+      {children}
+    </>
+  );
 }

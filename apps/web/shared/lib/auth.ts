@@ -1,4 +1,4 @@
-const SESSION_KEY = "finvam_session";
+const SESSION_KEY = "moneta_session";
 
 export interface Session {
   token: string;
