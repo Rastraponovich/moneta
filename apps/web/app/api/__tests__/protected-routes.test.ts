@@ -1,11 +1,12 @@
-import { describe, expect, it, vi, beforeEach } from "vitest";
-import { NextRequest } from "next/server";
 import { cookies } from "next/headers";
+import { NextRequest } from "next/server";
 
-import { GET as getTransactions } from "../transactions/route";
-import { POST as postTransaction } from "../transactions/route";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
 import { GET as getBalance } from "../balance/route";
 import { GET as getCategories } from "../categories/route";
+import { GET as getTransactions } from "../transactions/route";
+import { POST as postTransaction } from "../transactions/route";
 
 // Мокируем next/headers
 vi.mock("next/headers", () => ({

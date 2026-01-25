@@ -1,6 +1,7 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import { NextResponse } from "next/server";
+
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { getServerSession, requireAuth } from "./api-auth";
 import type { Session } from "./auth";

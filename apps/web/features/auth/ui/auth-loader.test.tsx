@@ -1,17 +1,21 @@
+import { createContext, type ReactNode, useContext } from "react";
+
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import { createContext, useContext, type ReactNode } from "react";
 
 import { AuthLoader } from "./auth-loader";
 
 // Создаем тестовый контекст
-const TestAuthContext = createContext<{
-  user: any;
-  isLoading: boolean;
-  login: () => Promise<void>;
-  logout: () => Promise<void>;
-  register: () => Promise<void>;
-} | undefined>(undefined);
+const TestAuthContext = createContext<
+  | {
+      user: any;
+      isLoading: boolean;
+      login: () => Promise<void>;
+      logout: () => Promise<void>;
+      register: () => Promise<void>;
+    }
+  | undefined
+>(undefined);
 
 function TestAuthProvider({
   children,

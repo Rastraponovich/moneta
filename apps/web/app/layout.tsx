@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 
-import { AuthProvider, AuthLoader } from "@/features/auth";
+import { AuthLoader, AuthProvider } from "@/features/auth";
 
 import "./globals.css";
 

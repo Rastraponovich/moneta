@@ -1,11 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import {
-  generateToken,
-  getSession,
-  removeSession,
-  saveSession,
-} from "./auth";
+import { generateToken, getSession, removeSession, saveSession } from "./auth";
 
 describe("auth utilities", () => {
   beforeEach(() => {

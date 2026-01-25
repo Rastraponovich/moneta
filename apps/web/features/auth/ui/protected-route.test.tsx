@@ -1,7 +1,9 @@
+import { createContext, type ReactNode, useContext } from "react";
+
+import { useRouter } from "next/navigation";
+
 import { render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { useRouter } from "next/navigation";
-import { createContext, useContext, type ReactNode } from "react";
 
 import { ProtectedRoute } from "./protected-route";
 
@@ -11,13 +13,16 @@ vi.mock("next/navigation", () => ({
 }));
 
 // Создаем тестовый контекст
-const TestAuthContext = createContext<{
-  user: any;
-  isLoading: boolean;
-  login: () => Promise<void>;
-  logout: () => Promise<void>;
-  register: () => Promise<void>;
-} | undefined>(undefined);
+const TestAuthContext = createContext<
+  | {
+      user: any;
+      isLoading: boolean;
+      login: () => Promise<void>;
+      logout: () => Promise<void>;
+      register: () => Promise<void>;
+    }
+  | undefined
+>(undefined);
 
 function TestAuthProvider({
   children,
