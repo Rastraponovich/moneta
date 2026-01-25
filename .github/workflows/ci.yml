@@ -22,9 +22,6 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Setup Turbo
-        uses: turborepo/setup-action@v1
-
       - name: Check formatting
         run: npm run format:check
 
