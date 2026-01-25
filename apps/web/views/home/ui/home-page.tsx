@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { Balance } from "@/entities/balance";
 import { Transaction } from "@/entities/transaction";
+import { AddTransactionWidget } from "@/widgets/add-transaction";
 import { BalanceCard } from "@/widgets/balance-card";
 import { TransactionsList } from "@/widgets/transactions-list";
 
@@ -12,33 +13,40 @@ export function HomePage() {
   const [balance, setBalance] = useState<Balance | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    Promise.all([
-      fetch("/api/transactions").then((res) => {
-        if (!res.ok) throw new Error("Failed to fetch transactions");
-        return res.json();
-      }),
-      fetch("/api/balance").then((res) => {
-        if (!res.ok) throw new Error("Failed to fetch balance");
-        return res.json();
-      }),
-    ])
-      .then(([transactionsData, balanceData]) => {
-        // Убеждаемся, что transactionsData - это массив
-        setTransactions(
-          Array.isArray(transactionsData) ? transactionsData : []
-        );
-        setBalance(balanceData);
-      })
-      .catch((error) => {
-        console.error("Failed to load data:", error);
-        setTransactions([]);
-        setBalance(null);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
+  const loadData = useCallback(async () => {
+    try {
+      const [transactionsRes, balanceRes] = await Promise.all([
+        fetch("/api/transactions"),
+        fetch("/api/balance"),
+      ]);
+
+      if (!transactionsRes.ok) throw new Error("Failed to fetch transactions");
+      if (!balanceRes.ok) throw new Error("Failed to fetch balance");
+
+      const [transactionsData, balanceData] = await Promise.all([
+        transactionsRes.json(),
+        balanceRes.json(),
+      ]);
+
+      setTransactions(Array.isArray(transactionsData) ? transactionsData : []);
+      setBalance(balanceData);
+    } catch (error) {
+      console.error("Failed to load data:", error);
+      setTransactions([]);
+      setBalance(null);
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
+
+  function handleTransactionAdded() {
+    // Обновляем данные после добавления транзакции
+    loadData();
+  }
 
   if (loading) {
     return (
@@ -52,6 +60,8 @@ export function HomePage() {
     <main className="min-h-screen p-4 md:p-8 bg-gray-50">
       <div className="max-w-6xl mx-auto">
         {balance && <BalanceCard balance={balance} />}
+
+        <AddTransactionWidget onTransactionAdded={handleTransactionAdded} />
 
         <TransactionsList transactions={transactions} />
       </div>

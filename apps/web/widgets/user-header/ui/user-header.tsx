@@ -1,9 +1,11 @@
 "use client";
 
+import Image from "next/image";
+
 import { LogOut, Wallet } from "lucide-react";
 
 import { useAuth } from "@/features/auth/model/auth-context";
-import { Button } from "@/shared/ui/button";
+import { Button } from "@/shared/ui";
 
 export function UserHeader() {
   const { user, logout } = useAuth();
@@ -33,9 +35,11 @@ export function UserHeader() {
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-3">
               {user.avatar ? (
-                <img
+                <Image
                   src={user.avatar}
                   alt={user.name}
+                  width={40}
+                  height={40}
                   className="w-10 h-10 rounded-full object-cover"
                 />
               ) : (
