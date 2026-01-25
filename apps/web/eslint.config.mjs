@@ -67,5 +67,11 @@ export default [
       "react/prop-types": "off",
     },
   },
+  {
+    files: ["**/*.test.{ts,tsx}", "**/__tests__/**/*.{ts,tsx}"],
+    rules: {
+      "@typescript-eslint/no-explicit-any": "off",
+    },
+  },
   prettier,
 ];

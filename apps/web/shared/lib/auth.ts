@@ -9,6 +9,9 @@ export interface Session {
 export function saveSession(session: Session): void {
   if (typeof window !== "undefined") {
     localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+    // Также сохраняем в cookies для доступа на сервере
+    const expiresDate = new Date(session.expiresAt);
+    document.cookie = `${SESSION_KEY}=${JSON.stringify(session)}; expires=${expiresDate.toUTCString()}; path=/; SameSite=Lax`;
   }
 }
 
@@ -37,6 +40,8 @@ export function getSession(): Session | null {
 export function removeSession(): void {
   if (typeof window !== "undefined") {
     localStorage.removeItem(SESSION_KEY);
+    // Также удаляем из cookies
+    document.cookie = `${SESSION_KEY}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
   }
 }
 

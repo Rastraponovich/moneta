@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 
-import { getSession } from "@/shared/lib/auth";
+import { getServerSession } from "@/shared/lib/api-auth";
 import { mockUsers } from "@/shared/lib/mock-users";
 
 export async function GET() {
-  const session = getSession();
+  const session = getServerSession();
 
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
