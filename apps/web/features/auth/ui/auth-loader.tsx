@@ -2,6 +2,8 @@
 
 import { ReactNode } from "react";
 
+import { UserHeader } from "@/widgets/user-header";
+
 import { useAuth } from "../model/auth-context";
 
 interface AuthLoaderProps {
@@ -9,7 +11,7 @@ interface AuthLoaderProps {
 }
 
 export function AuthLoader({ children }: AuthLoaderProps) {
-  const { isLoading } = useAuth();
+  const { isLoading, user } = useAuth();
 
   if (isLoading) {
     return (
@@ -22,5 +24,10 @@ export function AuthLoader({ children }: AuthLoaderProps) {
     );
   }
 
-  return <>{children}</>;
+  return (
+    <>
+      {user && <UserHeader />}
+      {children}
+    </>
+  );
 }

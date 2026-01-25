@@ -9,7 +9,7 @@ import {
 } from "react";
 
 import { User } from "@/entities/user";
-import { getSession, removeSession } from "@/shared/lib/auth";
+import { getSession, removeSession, saveSession } from "@/shared/lib/auth";
 
 interface AuthContextType {
   user: User | null;
@@ -60,6 +60,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     const data = await response.json();
+
+    // Сохраняем сессию в localStorage на клиенте
+    // Сервер уже установил cookie, но нам нужно также сохранить в localStorage
+    const expiresAt = Date.now() + 7 * 24 * 60 * 60 * 1000; // 7 days
+    saveSession({
+      token: data.token,
+      userId: data.user.id,
+      expiresAt,
+    });
+
     setUser(data.user);
   }
 
@@ -81,6 +91,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     const data = await response.json();
+
+    // Сохраняем сессию в localStorage на клиенте
+    // Сервер уже установил cookie, но нам нужно также сохранить в localStorage
+    const expiresAt = Date.now() + 7 * 24 * 60 * 60 * 1000; // 7 days
+    saveSession({
+      token: data.token,
+      userId: data.user.id,
+      expiresAt,
+    });
+
     setUser(data.user);
   }
 

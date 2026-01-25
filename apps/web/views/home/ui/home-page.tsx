@@ -14,15 +14,26 @@ export function HomePage() {
 
   useEffect(() => {
     Promise.all([
-      fetch("/api/transactions").then((res) => res.json()),
-      fetch("/api/balance").then((res) => res.json()),
+      fetch("/api/transactions").then((res) => {
+        if (!res.ok) throw new Error("Failed to fetch transactions");
+        return res.json();
+      }),
+      fetch("/api/balance").then((res) => {
+        if (!res.ok) throw new Error("Failed to fetch balance");
+        return res.json();
+      }),
     ])
       .then(([transactionsData, balanceData]) => {
-        setTransactions(transactionsData);
+        // Убеждаемся, что transactionsData - это массив
+        setTransactions(
+          Array.isArray(transactionsData) ? transactionsData : []
+        );
         setBalance(balanceData);
       })
       .catch((error) => {
         console.error("Failed to load data:", error);
+        setTransactions([]);
+        setBalance(null);
       })
       .finally(() => {
         setLoading(false);
@@ -40,10 +51,6 @@ export function HomePage() {
   return (
     <main className="min-h-screen p-4 md:p-8 bg-gray-50">
       <div className="max-w-6xl mx-auto">
-        <h1 className="text-2xl md:text-4xl font-bold mb-4 md:mb-8">
-          Финансовый трекер
-        </h1>
-
         {balance && <BalanceCard balance={balance} />}
 
         <TransactionsList transactions={transactions} />

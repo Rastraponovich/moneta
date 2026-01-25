@@ -32,45 +32,52 @@ export function TransactionsList({ transactions }: TransactionsListProps) {
     return Wallet;
   };
 
+  // Защита от не-массивов
+  const safeTransactions = Array.isArray(transactions) ? transactions : [];
+
   return (
     <Card>
       <h2 className="text-xl font-semibold mb-4">Транзакции</h2>
       <div className="space-y-3">
-        {transactions.map((transaction) => {
-          const Icon = getCategoryIcon(transaction.category);
-          return (
-            <div
-              key={transaction.id}
-              className="flex justify-between items-center p-3 border rounded-lg"
-            >
-              <div className="flex items-center gap-3">
-                <Icon
-                  className={`w-5 h-5 ${
+        {safeTransactions.length === 0 ? (
+          <p className="text-gray-500 text-center py-4">Нет транзакций</p>
+        ) : (
+          safeTransactions.map((transaction) => {
+            const Icon = getCategoryIcon(transaction.category);
+            return (
+              <div
+                key={transaction.id}
+                className="flex justify-between items-center p-3 border rounded-lg"
+              >
+                <div className="flex items-center gap-3">
+                  <Icon
+                    className={`w-5 h-5 ${
+                      transaction.type === "income"
+                        ? "text-green-600"
+                        : "text-red-600"
+                    }`}
+                  />
+                  <div>
+                    <p className="font-semibold">{transaction.description}</p>
+                    <p className="text-sm text-gray-500">
+                      {transaction.category} • {transaction.date}
+                    </p>
+                  </div>
+                </div>
+                <p
+                  className={`text-lg font-bold ${
                     transaction.type === "income"
                       ? "text-green-600"
                       : "text-red-600"
                   }`}
-                />
-                <div>
-                  <p className="font-semibold">{transaction.description}</p>
-                  <p className="text-sm text-gray-500">
-                    {transaction.category} • {transaction.date}
-                  </p>
-                </div>
+                >
+                  {transaction.type === "income" ? "+" : "-"}
+                  {formatCurrency(transaction.amount)}
+                </p>
               </div>
-              <p
-                className={`text-lg font-bold ${
-                  transaction.type === "income"
-                    ? "text-green-600"
-                    : "text-red-600"
-                }`}
-              >
-                {transaction.type === "income" ? "+" : "-"}
-                {formatCurrency(transaction.amount)}
-              </p>
-            </div>
-          );
-        })}
+            );
+          })
+        )}
       </div>
     </Card>
   );

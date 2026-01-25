@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 
 import { Session } from "./auth";
 
-const SESSION_KEY = "finvam_session";
+const SESSION_KEY = "moneta_session";
 
 /**
  * Получает сессию из cookies на сервере

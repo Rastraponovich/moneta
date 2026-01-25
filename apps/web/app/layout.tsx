@@ -5,7 +5,7 @@ import { AuthLoader, AuthProvider } from "@/features/auth";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Finvam - Финансовый трекер",
+  title: "Moneta - Финансовый трекер",
   description: "Управление личными финансами",
 };
 

@@ -34,7 +34,7 @@ describe("auth utilities", () => {
 
     saveSession(session);
     expect(localStorage.setItem).toHaveBeenCalled();
-    expect(document.cookie).toContain("finvam_session");
+    expect(document.cookie).toContain("moneta_session");
 
     vi.mocked(localStorage.getItem).mockReturnValue(JSON.stringify(session));
     const retrieved = getSession();
@@ -51,18 +51,18 @@ describe("auth utilities", () => {
     saveSession(session);
 
     expect(localStorage.setItem).toHaveBeenCalledWith(
-      "finvam_session",
+      "moneta_session",
       JSON.stringify(session)
     );
-    expect(document.cookie).toContain("finvam_session");
+    expect(document.cookie).toContain("moneta_session");
     expect(document.cookie).toContain(session.token);
   });
 
   it("removes session from both localStorage and cookies", () => {
-    document.cookie = "finvam_session=test; path=/";
+    document.cookie = "moneta_session=test; path=/";
     removeSession();
 
-    expect(localStorage.removeItem).toHaveBeenCalledWith("finvam_session");
+    expect(localStorage.removeItem).toHaveBeenCalledWith("moneta_session");
     expect(document.cookie).toContain("expires=Thu, 01 Jan 1970");
   });
 
