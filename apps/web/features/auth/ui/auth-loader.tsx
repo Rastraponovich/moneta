@@ -2,8 +2,9 @@
 
 import { ReactNode } from "react";
 
-import { useAuth } from "../model/auth-context";
 import { UserHeader } from "@/widgets/user-header";
+
+import { useAuth } from "../model/auth-context";
 
 interface AuthLoaderProps {
   children: ReactNode;

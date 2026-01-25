@@ -60,7 +60,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     const data = await response.json();
-    
+
     // Сохраняем сессию в localStorage на клиенте
     // Сервер уже установил cookie, но нам нужно также сохранить в localStorage
     const expiresAt = Date.now() + 7 * 24 * 60 * 60 * 1000; // 7 days
@@ -69,7 +69,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       userId: data.user.id,
       expiresAt,
     });
-    
+
     setUser(data.user);
   }
 
@@ -91,7 +91,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     const data = await response.json();
-    
+
     // Сохраняем сессию в localStorage на клиенте
     // Сервер уже установил cookie, но нам нужно также сохранить в localStorage
     const expiresAt = Date.now() + 7 * 24 * 60 * 60 * 1000; // 7 days
@@ -100,7 +100,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       userId: data.user.id,
       expiresAt,
     });
-    
+
     setUser(data.user);
   }
 
