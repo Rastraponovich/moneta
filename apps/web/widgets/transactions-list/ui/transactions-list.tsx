@@ -10,7 +10,7 @@ import {
 } from "lucide-react";
 
 import { Transaction } from "@/entities/transaction";
-import { Card } from "@/shared/ui/card";
+import { Card } from "@/shared/ui";
 
 interface TransactionsListProps {
   transactions: Transaction[];
