@@ -4,7 +4,7 @@ import { getServerSession } from "@/shared/lib/api-auth";
 import { mockUsers } from "@/shared/lib/mock-users";
 
 export async function GET() {
-  const session = getServerSession();
+  const session = await getServerSession();
 
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

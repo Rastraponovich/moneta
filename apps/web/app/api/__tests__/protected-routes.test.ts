@@ -28,7 +28,7 @@ describe("Protected API Routes", () => {
 
   describe("GET /api/transactions", () => {
     it("returns 401 when not authenticated", async () => {
-      mockCookies.mockReturnValue({
+      mockCookies.mockResolvedValue({
         get: vi.fn().mockReturnValue(undefined),
       } as any);
 
@@ -47,7 +47,7 @@ describe("Protected API Routes", () => {
         expiresAt: Date.now() + 1000000,
       };
 
-      mockCookies.mockReturnValue({
+      mockCookies.mockResolvedValue({
         get: vi.fn().mockReturnValue({
           value: JSON.stringify(validSession),
         }),
@@ -64,7 +64,7 @@ describe("Protected API Routes", () => {
 
   describe("POST /api/transactions", () => {
     it("returns 401 when not authenticated", async () => {
-      mockCookies.mockReturnValue({
+      mockCookies.mockResolvedValue({
         get: vi.fn().mockReturnValue(undefined),
       } as any);
 
@@ -86,7 +86,7 @@ describe("Protected API Routes", () => {
         expiresAt: Date.now() + 1000000,
       };
 
-      mockCookies.mockReturnValue({
+      mockCookies.mockResolvedValue({
         get: vi.fn().mockReturnValue({
           value: JSON.stringify(validSession),
         }),
@@ -108,7 +108,7 @@ describe("Protected API Routes", () => {
 
   describe("GET /api/balance", () => {
     it("returns 401 when not authenticated", async () => {
-      mockCookies.mockReturnValue({
+      mockCookies.mockResolvedValue({
         get: vi.fn().mockReturnValue(undefined),
       } as any);
 
@@ -127,7 +127,7 @@ describe("Protected API Routes", () => {
         expiresAt: Date.now() + 1000000,
       };
 
-      mockCookies.mockReturnValue({
+      mockCookies.mockResolvedValue({
         get: vi.fn().mockReturnValue({
           value: JSON.stringify(validSession),
         }),
@@ -144,7 +144,7 @@ describe("Protected API Routes", () => {
 
   describe("GET /api/categories", () => {
     it("returns 401 when not authenticated", async () => {
-      mockCookies.mockReturnValue({
+      mockCookies.mockResolvedValue({
         get: vi.fn().mockReturnValue(undefined),
       } as any);
 
@@ -163,7 +163,7 @@ describe("Protected API Routes", () => {
         expiresAt: Date.now() + 1000000,
       };
 
-      mockCookies.mockReturnValue({
+      mockCookies.mockResolvedValue({
         get: vi.fn().mockReturnValue({
           value: JSON.stringify(validSession),
         }),
@@ -186,7 +186,7 @@ describe("Protected API Routes", () => {
         expiresAt: Date.now() - 1000,
       };
 
-      mockCookies.mockReturnValue({
+      mockCookies.mockResolvedValue({
         get: vi.fn().mockReturnValue({
           value: JSON.stringify(expiredSession),
         }),

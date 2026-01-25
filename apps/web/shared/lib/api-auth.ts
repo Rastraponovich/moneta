@@ -8,8 +8,8 @@ const SESSION_KEY = "finvam_session";
 /**
  * Получает сессию из cookies на сервере
  */
-export function getServerSession(): Session | null {
-  const cookieStore = cookies();
+export async function getServerSession(): Promise<Session | null> {
+  const cookieStore = await cookies();
   const sessionData = cookieStore.get(SESSION_KEY)?.value;
 
   if (!sessionData) {
@@ -32,10 +32,10 @@ export function getServerSession(): Session | null {
  * @param _request - Request объект из Next.js route handler (не используется, но нужен для совместимости)
  * @returns NextResponse с ошибкой 401 если не авторизован, или null если авторизован
  */
-export function requireAuth(
+export async function requireAuth(
   _request: Request
-): NextResponse<{ error: string }> | null {
-  const session = getServerSession();
+): Promise<NextResponse<{ error: string }> | null> {
+  const session = await getServerSession();
 
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

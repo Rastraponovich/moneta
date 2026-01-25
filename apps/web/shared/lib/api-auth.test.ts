@@ -18,117 +18,117 @@ describe("api-auth", () => {
   });
 
   describe("getServerSession", () => {
-    it("returns null when no session cookie", () => {
-      mockCookies.mockReturnValue({
+    it("returns null when no session cookie", async () => {
+      mockCookies.mockResolvedValue({
         get: vi.fn().mockReturnValue(undefined),
       } as any);
 
-      const session = getServerSession();
+      const session = await getServerSession();
       expect(session).toBeNull();
     });
 
-    it("returns null when cookie value is empty", () => {
-      mockCookies.mockReturnValue({
+    it("returns null when cookie value is empty", async () => {
+      mockCookies.mockResolvedValue({
         get: vi.fn().mockReturnValue({ value: "" }),
       } as any);
 
-      const session = getServerSession();
+      const session = await getServerSession();
       expect(session).toBeNull();
     });
 
-    it("returns session when valid cookie exists", () => {
+    it("returns session when valid cookie exists", async () => {
       const validSession: Session = {
         token: "test_token",
         userId: "user_123",
         expiresAt: Date.now() + 1000000,
       };
 
-      mockCookies.mockReturnValue({
+      mockCookies.mockResolvedValue({
         get: vi.fn().mockReturnValue({
           value: JSON.stringify(validSession),
         }),
       } as any);
 
-      const session = getServerSession();
+      const session = await getServerSession();
       expect(session).toEqual(validSession);
     });
 
-    it("returns null when session expired", () => {
+    it("returns null when session expired", async () => {
       const expiredSession: Session = {
         token: "test_token",
         userId: "user_123",
         expiresAt: Date.now() - 1000,
       };
 
-      mockCookies.mockReturnValue({
+      mockCookies.mockResolvedValue({
         get: vi.fn().mockReturnValue({
           value: JSON.stringify(expiredSession),
         }),
       } as any);
 
-      const session = getServerSession();
+      const session = await getServerSession();
       expect(session).toBeNull();
     });
 
-    it("returns null when cookie value is invalid JSON", () => {
-      mockCookies.mockReturnValue({
+    it("returns null when cookie value is invalid JSON", async () => {
+      mockCookies.mockResolvedValue({
         get: vi.fn().mockReturnValue({
           value: "invalid json",
         }),
       } as any);
 
-      const session = getServerSession();
+      const session = await getServerSession();
       expect(session).toBeNull();
     });
   });
 
   describe("requireAuth", () => {
-    it("returns null when user is authenticated", () => {
+    it("returns null when user is authenticated", async () => {
       const validSession: Session = {
         token: "test_token",
         userId: "user_123",
         expiresAt: Date.now() + 1000000,
       };
 
-      mockCookies.mockReturnValue({
+      mockCookies.mockResolvedValue({
         get: vi.fn().mockReturnValue({
           value: JSON.stringify(validSession),
         }),
       } as any);
 
       const request = new Request("http://localhost/api/test");
-      const result = requireAuth(request);
+      const result = await requireAuth(request);
 
       expect(result).toBeNull();
     });
 
-    it("returns 401 response when user is not authenticated", () => {
-      mockCookies.mockReturnValue({
+    it("returns 401 response when user is not authenticated", async () => {
+      mockCookies.mockResolvedValue({
         get: vi.fn().mockReturnValue(undefined),
       } as any);
 
       const request = new Request("http://localhost/api/test");
-      const result = requireAuth(request);
+      const result = await requireAuth(request);
 
       expect(result).toBeInstanceOf(NextResponse);
       expect(result?.status).toBe(401);
     });
 
-    it("returns 401 response when session expired", () => {
+    it("returns 401 response when session expired", async () => {
       const expiredSession: Session = {
         token: "test_token",
         userId: "user_123",
         expiresAt: Date.now() - 1000,
       };
 
-      mockCookies.mockReturnValue({
+      mockCookies.mockResolvedValue({
         get: vi.fn().mockReturnValue({
           value: JSON.stringify(expiredSession),
         }),
       } as any);
 
       const request = new Request("http://localhost/api/test");
-      const result = requireAuth(request);
+      const result = await requireAuth(request);
 
       expect(result).toBeInstanceOf(NextResponse);
       expect(result?.status).toBe(401);
