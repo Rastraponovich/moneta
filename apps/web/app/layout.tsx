@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 
-import { AuthProvider } from "@/features/auth";
+import { AuthLoader, AuthProvider } from "@/features/auth";
 
 import "./globals.css";
 
@@ -23,7 +23,9 @@ export default function RootLayout({
   return (
     <html lang="ru">
       <body>
-        <AuthProvider>{children}</AuthProvider>
+        <AuthProvider>
+          <AuthLoader>{children}</AuthLoader>
+        </AuthProvider>
       </body>
     </html>
   );
