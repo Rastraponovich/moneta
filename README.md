@@ -89,6 +89,37 @@ npm run test:coverage
 - **Монорепо**: Turborepo
 - **CI/CD**: GitHub Actions
 
+## Процесс разработки
+
+### Схема веток
+
+```text
+new branch (feature/xxx) → dev → main
+```
+
+- **main** - основная ветка, защищена, только через PR
+- **dev** - ветка разработки, защищена от прямого push, только через PR
+- **feature branches** - создаются от dev, мержатся в dev через PR
+
+### Работа с ветками
+
+1. **Создание feature ветки**:
+
+   ```bash
+   git checkout dev
+   git pull origin dev
+   git checkout -b feature/my-feature
+   ```
+
+2. **Создание Pull Request**:
+   - Из feature ветки → `dev`: создайте PR на GitHub
+   - Из `dev` → `main`: после тестирования в dev создайте PR в main
+
+3. **Защита веток**:
+   - Ветки `main` и `dev` защищены от прямого push
+   - Все изменения должны проходить через Pull Requests
+   - Подробные инструкции по настройке: [BRANCH_PROTECTION.md](.github/BRANCH_PROTECTION.md)
+
 ## Коммиты
 
 Проект использует Conventional Commits. Формат: `<type>(<scope>): <subject>`
