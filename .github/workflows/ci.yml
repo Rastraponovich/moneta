@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [main, dev]
 
+permissions:
+  contents: read
+  pull-requests: write
+
 jobs:
   lint-and-test:
     runs-on: ubuntu-latest
@@ -32,5 +36,24 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Test
-        run: npm run test
+      - name: Run tests with coverage
+        run: |
+          cd apps/web
+          npm run test:coverage -- --run
+        env:
+          CI: true
+
+      - name: Upload coverage to PR
+        if: github.event_name == 'pull_request'
+        uses: davelosert/vitest-coverage-report-action@v1
+        with:
+          json-summary-path: coverage/coverage-summary.json
+          working-directory: apps/web
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload coverage artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: apps/web/coverage/
+          retention-days: 30
