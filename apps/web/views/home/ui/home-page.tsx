@@ -1,54 +1,58 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState, useTransition } from "react";
 
-import { Balance } from "@/entities/balance";
-import { Transaction } from "@/entities/transaction";
 import { AddTransactionWidget } from "@/widgets/add-transaction";
-import { BalanceCard } from "@/widgets/balance-card";
+import { BalanceWidget } from "@/widgets/balance-widget";
 import { TransactionsList } from "@/widgets/transactions-list";
+
+import { Transaction } from "@/entities/transaction";
+
+import { getTransactions } from "@/shared/actions/transactions";
 
 export function HomePage() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [balance, setBalance] = useState<Balance | null>(null);
   const [loading, setLoading] = useState(true);
-
-  const loadData = useCallback(async () => {
-    try {
-      const [transactionsRes, balanceRes] = await Promise.all([
-        fetch("/api/transactions"),
-        fetch("/api/balance"),
-      ]);
-
-      if (!transactionsRes.ok) throw new Error("Failed to fetch transactions");
-      if (!balanceRes.ok) throw new Error("Failed to fetch balance");
-
-      const [transactionsData, balanceData] = await Promise.all([
-        transactionsRes.json(),
-        balanceRes.json(),
-      ]);
-
-      setTransactions(Array.isArray(transactionsData) ? transactionsData : []);
-      setBalance(balanceData);
-    } catch (error) {
-      console.error("Failed to load data:", error);
-      setTransactions([]);
-      setBalance(null);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
-    loadData();
-  }, [loadData]);
+    async function loadTransactions() {
+      try {
+        const data = await getTransactions();
+        setTransactions(Array.isArray(data) ? data : []);
+      } catch (error) {
+        console.error("Failed to load transactions:", error);
+        setTransactions([]);
+      } finally {
+        setLoading(false);
+      }
+    }
 
+    if (refreshTrigger === 0) {
+      loadTransactions();
+    } else {
+      startTransition(async () => {
+        await loadTransactions();
+      });
+    }
+  }, [refreshTrigger, startTransition]);
+
+  // Обработчики триггерят перезагрузку данных
+  // Revalidation от Server Actions также обновит данные автоматически
   function handleTransactionAdded() {
-    // Обновляем данные после добавления транзакции
-    loadData();
+    setRefreshTrigger((prev) => prev + 1);
   }
 
-  if (loading) {
+  function handleTransactionUpdated() {
+    setRefreshTrigger((prev) => prev + 1);
+  }
+
+  function handleTransactionDeleted() {
+    setRefreshTrigger((prev) => prev + 1);
+  }
+
+  if (loading && transactions.length === 0) {
     return (
       <div className="min-h-screen p-4 md:p-8 bg-gray-50 flex items-center justify-center">
         <p className="text-gray-600">Загрузка...</p>
@@ -59,11 +63,16 @@ export function HomePage() {
   return (
     <main className="min-h-screen p-4 md:p-8 bg-gray-50">
       <div className="max-w-6xl mx-auto">
-        {balance && <BalanceCard balance={balance} />}
+        <BalanceWidget refreshKey={refreshTrigger} />
 
         <AddTransactionWidget onTransactionAdded={handleTransactionAdded} />
 
-        <TransactionsList transactions={transactions} />
+        <TransactionsList
+          transactions={transactions}
+          isPending={isPending}
+          onTransactionUpdated={handleTransactionUpdated}
+          onTransactionDeleted={handleTransactionDeleted}
+        />
       </div>
     </main>
   );

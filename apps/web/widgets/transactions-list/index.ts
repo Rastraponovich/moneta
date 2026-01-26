@@ -1,1 +1,1 @@
-export { TransactionsList } from "./ui/transactions-list";
+export { TransactionsList } from "./view";

@@ -1,10 +1,10 @@
 "use client";
 
+import { LogOut, Wallet } from "lucide-react";
 import Image from "next/image";
 
-import { LogOut, Wallet } from "lucide-react";
-
 import { useAuth } from "@/features/auth/model/auth-context";
+
 import { Button } from "@/shared/ui";
 
 export function UserHeader() {

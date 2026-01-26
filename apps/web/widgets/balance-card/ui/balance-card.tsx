@@ -3,6 +3,7 @@
 import { TrendingDown, TrendingUp, Wallet } from "lucide-react";
 
 import { Balance } from "@/entities/balance";
+
 import { Card } from "@/shared/ui";
 
 interface BalanceCardProps {

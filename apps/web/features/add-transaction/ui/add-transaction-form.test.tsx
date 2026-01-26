@@ -4,9 +4,30 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { Transaction } from "@/entities/transaction";
 
+import { createTransaction } from "@/shared/actions/transactions";
+
 import { AddTransactionForm } from "./add-transaction-form";
 
-// Мокируем fetch через stubGlobal
+// Мокируем Server Actions
+vi.mock("@/shared/actions/transactions", () => ({
+  createTransaction: vi.fn(),
+  updateTransaction: vi.fn(),
+}));
+
+// Мокируем next/headers для Server Actions
+vi.mock("next/headers", () => ({
+  cookies: vi.fn().mockResolvedValue({
+    get: vi.fn().mockReturnValue({
+      value: JSON.stringify({
+        token: "test_token",
+        userId: "1",
+        expiresAt: Date.now() + 1000000,
+      }),
+    }),
+  }),
+}));
+
+// Мокируем fetch через stubGlobal для категорий
 const mockFetch = vi.fn();
 vi.stubGlobal("fetch", mockFetch);
 
@@ -188,17 +209,14 @@ describe("AddTransactionForm", () => {
       date: "2026-01-25",
     };
 
+    const mockCreateTransaction = vi.mocked(createTransaction);
+    mockCreateTransaction.mockResolvedValue(mockTransaction);
+
     mockFetch.mockImplementation((url: string | URL | Request) => {
       if (typeof url === "string" && url.includes("/api/categories")) {
         return Promise.resolve({
           ok: true,
           json: async () => mockCategories,
-        } as Response);
-      }
-      if (typeof url === "string" && url.includes("/api/transactions")) {
-        return Promise.resolve({
-          ok: true,
-          json: async () => mockTransaction,
         } as Response);
       }
       return Promise.resolve({
@@ -235,18 +253,12 @@ describe("AddTransactionForm", () => {
     await user.click(submitButton);
 
     await waitFor(() => {
-      expect(mockFetch).toHaveBeenCalledWith("/api/transactions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          amount: 1000,
-          type: "expense",
-          category: "Продукты",
-          description: "Тестовая транзакция",
-          date: "2026-01-25",
-        }),
+      expect(mockCreateTransaction).toHaveBeenCalledWith({
+        amount: 1000,
+        type: "expense",
+        category: "Продукты",
+        description: "Тестовая транзакция",
+        date: "2026-01-25",
       });
     });
 
@@ -266,27 +278,19 @@ describe("AddTransactionForm", () => {
       date: "2026-01-25",
     };
 
-    let resolveFetch: (value: Response) => void;
-    const fetchPromise = new Promise<Response>((resolve) => {
-      resolveFetch = resolve;
+    let resolveCreateTransaction: (value: Transaction) => void;
+    const createPromise = new Promise<Transaction>((resolve) => {
+      resolveCreateTransaction = resolve;
     });
 
-    let callCount = 0;
+    const mockCreateTransaction = vi.mocked(createTransaction);
+    mockCreateTransaction.mockReturnValue(createPromise);
+
     mockFetch.mockImplementation((url: string | URL | Request) => {
       if (typeof url === "string" && url.includes("/api/categories")) {
         return Promise.resolve({
           ok: true,
           json: async () => mockCategories,
-        } as Response);
-      }
-      if (typeof url === "string" && url.includes("/api/transactions")) {
-        callCount++;
-        if (callCount === 1) {
-          return fetchPromise as Promise<Response>;
-        }
-        return Promise.resolve({
-          ok: true,
-          json: async () => mockTransaction,
         } as Response);
       }
       return Promise.resolve({
@@ -323,14 +327,13 @@ describe("AddTransactionForm", () => {
     await user.click(submitButton);
 
     // Проверяем, что кнопка показывает состояние загрузки
-    expect(screen.getByText(/сохранение/i)).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText(/сохранение/i)).toBeInTheDocument();
+    });
     expect(mockOnLoadingChange).toHaveBeenCalledWith(true);
 
     // Завершаем запрос
-    resolveFetch!({
-      ok: true,
-      json: async () => mockTransaction,
-    } as Response);
+    resolveCreateTransaction!(mockTransaction);
 
     await waitFor(() => {
       expect(mockOnLoadingChange).toHaveBeenCalledWith(false);
@@ -340,17 +343,14 @@ describe("AddTransactionForm", () => {
   it("handles API error", async () => {
     const user = userEvent.setup();
 
+    const mockCreateTransaction = vi.mocked(createTransaction);
+    mockCreateTransaction.mockRejectedValue(new Error("Server error"));
+
     mockFetch.mockImplementation((url: string | URL | Request) => {
       if (typeof url === "string" && url.includes("/api/categories")) {
         return Promise.resolve({
           ok: true,
           json: async () => mockCategories,
-        } as Response);
-      }
-      if (typeof url === "string" && url.includes("/api/transactions")) {
-        return Promise.resolve({
-          ok: false,
-          statusText: "Internal Server Error",
         } as Response);
       }
       return Promise.resolve({
@@ -422,17 +422,14 @@ describe("AddTransactionForm", () => {
       date: "2026-01-25",
     };
 
+    const mockCreateTransaction = vi.mocked(createTransaction);
+    mockCreateTransaction.mockResolvedValue(mockTransaction);
+
     mockFetch.mockImplementation((url: string | URL | Request) => {
       if (typeof url === "string" && url.includes("/api/categories")) {
         return Promise.resolve({
           ok: true,
           json: async () => mockCategories,
-        } as Response);
-      }
-      if (typeof url === "string" && url.includes("/api/transactions")) {
-        return Promise.resolve({
-          ok: true,
-          json: async () => mockTransaction,
         } as Response);
       }
       return Promise.resolve({

@@ -1,7 +1,8 @@
 "use client";
 
-import { ProtectedRoute } from "@/features/auth";
 import { HomePage } from "@/views/home";
+
+import { ProtectedRoute } from "@/features/auth";
 
 export default function Home() {
   return (
