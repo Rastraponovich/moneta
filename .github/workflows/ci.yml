@@ -47,10 +47,9 @@ jobs:
         if: github.event_name == 'pull_request'
         uses: davelosert/vitest-coverage-report-action@v1
         with:
-          coverage-summary-path: apps/web/coverage/coverage-summary.json
+          json-summary-path: apps/web/coverage/coverage-summary.json
+          working-directory: apps/web
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          title: "📊 Coverage Report"
-          update-comment: true
 
       - name: Upload coverage artifacts
         uses: actions/upload-artifact@v4
