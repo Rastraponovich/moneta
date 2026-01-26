@@ -47,7 +47,7 @@ jobs:
         if: github.event_name == 'pull_request'
         uses: davelosert/vitest-coverage-report-action@v1
         with:
-          json-summary-path: apps/web/coverage/coverage-summary.json
+          json-summary-path: coverage/coverage-summary.json
           working-directory: apps/web
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
