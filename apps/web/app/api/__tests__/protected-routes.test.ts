@@ -1,6 +1,5 @@
 import { cookies } from "next/headers";
 import { NextRequest } from "next/server";
-
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { GET as getBalance } from "../balance/route";
@@ -13,10 +12,15 @@ vi.mock("next/headers", () => ({
   cookies: vi.fn(),
 }));
 
-// Мокируем mock-data
+// Мокируем mock-store
+vi.mock("@/shared/lib/mock-store", () => ({
+  getTransactions: vi.fn(() => [{ id: "1", amount: 100 }]),
+  getBalance: vi.fn(() => ({ total: 1000 })),
+  addTransaction: vi.fn((t) => t),
+}));
+
+// Мокируем mock-data для categories
 vi.mock("@/shared/lib/mock-data", () => ({
-  mockTransactions: [{ id: "1", amount: 100 }],
-  mockBalance: { total: 1000 },
   mockCategories: [{ id: "1", name: "Food" }],
 }));
 

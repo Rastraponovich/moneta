@@ -19,7 +19,9 @@ export function Dialog({
 }: DialogProps) {
   // Закрытие по Escape (только если не загружается)
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen) {
+      return;
+    }
 
     function handleEscape(e: KeyboardEvent) {
       if (e.key === "Escape" && !loading) {
@@ -37,7 +39,9 @@ export function Dialog({
     };
   }, [isOpen, onClose, loading]);
 
-  if (!isOpen) return null;
+  if (!isOpen) {
+    return null;
+  }
 
   function handleOverlayClick() {
     if (!loading) {
