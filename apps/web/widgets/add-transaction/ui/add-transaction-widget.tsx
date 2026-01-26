@@ -2,8 +2,10 @@
 
 import { useState } from "react";
 
-import { Transaction } from "@/entities/transaction";
 import { AddTransactionForm } from "@/features/add-transaction";
+
+import { Transaction } from "@/entities/transaction";
+
 import { Button, Dialog } from "@/shared/ui";
 
 interface AddTransactionWidgetProps {
