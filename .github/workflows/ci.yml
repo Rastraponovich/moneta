@@ -32,5 +32,25 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Test
-        run: npm run test
+      - name: Run tests with coverage
+        run: |
+          cd apps/web
+          npm run test:coverage -- --run
+        env:
+          CI: true
+
+      - name: Upload coverage to PR
+        if: github.event_name == 'pull_request'
+        uses: daveloskins/vitest-coverage-comment@v2
+        with:
+          coverage-file-path: apps/web/coverage/coverage-summary.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          title: "📊 Coverage Report"
+          update-comment: true
+
+      - name: Upload coverage artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: apps/web/coverage/
+          retention-days: 30
