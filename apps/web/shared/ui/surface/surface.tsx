@@ -17,7 +17,7 @@ export function Surface<T extends ElementType = "div">({
   const Component = as || ("div" as ElementType);
   return (
     <Component
-      className={cx("bg-white rounded-lg shadow p-4 md:p-6", className)}
+      className={cx("bg-surface rounded-2xl p-4 md:p-6 shadow-md", className)}
       {...props}
     >
       {children}

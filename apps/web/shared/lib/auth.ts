@@ -6,6 +6,7 @@ export interface Session {
   expiresAt: number;
 }
 
+/** Saves session to localStorage and cookie. */
 export function saveSession(session: Session): void {
   if (typeof window !== "undefined") {
     localStorage.setItem(SESSION_KEY, JSON.stringify(session));
@@ -15,6 +16,7 @@ export function saveSession(session: Session): void {
   }
 }
 
+/** Returns current session from localStorage or null. */
 export function getSession(): Session | null {
   if (typeof window === "undefined") {
     return null;
@@ -37,6 +39,7 @@ export function getSession(): Session | null {
   }
 }
 
+/** Clears session from localStorage and cookie. */
 export function removeSession(): void {
   if (typeof window !== "undefined") {
     localStorage.removeItem(SESSION_KEY);
@@ -45,6 +48,7 @@ export function removeSession(): void {
   }
 }
 
+/** Generates a unique token string. */
 export function generateToken(): string {
   return `token_${Date.now()}_${Math.random().toString(36).substring(2, 15)}`;
 }
