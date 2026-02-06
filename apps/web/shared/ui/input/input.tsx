@@ -5,12 +5,14 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 }
 
 export function Input({ label, className = "", ...props }: InputProps) {
-  const inputClasses = `w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[44px] ${className}`;
+  const inputClasses = `w-full px-4 py-2 border border-border rounded-xl bg-surface text-foreground placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent min-h-[44px] transition-colors ${className}`;
 
   if (label) {
     return (
       <div>
-        <label className="block text-sm font-medium mb-1">{label}</label>
+        <label className="block text-sm font-medium text-foreground mb-1">
+          {label}
+        </label>
         <input className={inputClasses} {...props} />
       </div>
     );

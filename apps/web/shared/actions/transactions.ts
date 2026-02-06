@@ -8,15 +8,32 @@ import { delay } from "@/shared/lib/delay";
 import {
   addTransaction,
   deleteTransaction as deleteTransactionStore,
+  getTransactionsFiltered,
   getTransactions as getTransactionsStore,
   updateTransaction as updateTransactionStore,
 } from "@/shared/lib/mock-store";
+import type { TransactionsFilter } from "@/shared/lib/mock-store";
 import { requireServerAuth } from "@/shared/lib/server-auth";
 
-export async function getTransactions(): Promise<Transaction[]> {
+export type GetTransactionsParams = TransactionsFilter;
+
+function isEmptyParams(params: GetTransactionsParams | undefined): boolean {
+  if (!params) return true;
+  const q = (params.q ?? "").trim();
+  const type = params.type ?? "all";
+  const sortBy = params.sortBy ?? "date-desc";
+  return !q && type === "all" && sortBy === "date-desc";
+}
+
+export async function getTransactions(
+  params?: GetTransactionsParams
+): Promise<Transaction[]> {
   await requireServerAuth();
   await delay();
-  return getTransactionsStore();
+  if (isEmptyParams(params)) {
+    return getTransactionsStore();
+  }
+  return getTransactionsFiltered(params!);
 }
 
 export interface CreateTransactionInput {

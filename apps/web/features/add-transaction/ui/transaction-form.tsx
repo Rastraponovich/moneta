@@ -9,7 +9,11 @@ import {
   createTransaction,
   updateTransaction,
 } from "@/shared/actions/transactions";
-import { Button, Input } from "@/shared/ui";
+import { getCategoryIcon } from "@/shared/lib/transaction-utils";
+import { Button, Input, Skeleton, useToast } from "@/shared/ui";
+
+const QUICK_DATE_TODAY = 0;
+const QUICK_DATE_YESTERDAY = 1;
 
 interface TransactionFormProps {
   initialTransaction?: Transaction;
@@ -45,6 +49,7 @@ export function TransactionForm({
 
   const isEditMode = !!initialTransaction;
   const loading = isPending;
+  const { addToast } = useToast();
 
   // Загружаем категории (только один раз)
   useEffect(() => {
@@ -106,8 +111,8 @@ export function TransactionForm({
     }
   }, [type, categories, isEditMode]);
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  async function handleSubmit(event: React.FormEvent) {
+    event.preventDefault();
     setError("");
 
     // Валидация
@@ -158,13 +163,17 @@ export function TransactionForm({
           }
         }
 
+        addToast(
+          isEditMode ? "Транзакция сохранена" : "Транзакция добавлена",
+          "success"
+        );
         onSuccess?.(transaction);
       } catch (err) {
-        setError(
-          isEditMode
-            ? "Не удалось обновить транзакцию. Попробуйте еще раз."
-            : "Не удалось создать транзакцию. Попробуйте еще раз."
-        );
+        const message = isEditMode
+          ? "Не удалось обновить транзакцию. Попробуйте еще раз."
+          : "Не удалось создать транзакцию. Попробуйте еще раз.";
+        setError(message);
+        addToast(message, "error");
         console.error("Failed to save transaction:", err);
       } finally {
         onLoadingChange?.(false);
@@ -176,25 +185,45 @@ export function TransactionForm({
 
   if (loadingCategories) {
     return (
-      <div className="flex items-center justify-center py-8">
-        <p className="text-gray-600">Загрузка категорий...</p>
+      <div className="space-y-4 py-4">
+        <Skeleton className="h-4 w-16 mb-2" />
+        <Skeleton className="h-12 w-full rounded-xl" />
+        <Skeleton className="h-4 w-24 mb-2" />
+        <Skeleton className="h-12 w-full rounded-xl" />
+        <Skeleton className="h-4 w-20 mb-2" />
+        <Skeleton className="h-12 w-full rounded-xl" />
       </div>
     );
+  }
+
+  const quickAmounts = [100, 500, 1000, 5000, 10000];
+
+  function setQuickAmount(value: number) {
+    const current = parseFloat(amount) || 0;
+    setAmount(String(current + value));
+  }
+
+  function setQuickDate(daysAgo: number) {
+    const d = new Date();
+    d.setDate(d.getDate() - daysAgo);
+    setDate(d.toISOString().split("T")[0]);
   }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       {/* Тип транзакции */}
       <div>
-        <label className="block text-sm font-medium mb-2">Тип</label>
+        <label className="block text-sm font-medium text-foreground mb-2">
+          Тип
+        </label>
         <div className="flex gap-2">
           <button
             type="button"
             onClick={() => setType("income")}
-            className={`flex-1 py-2 px-4 rounded-lg font-medium transition-colors min-h-[44px] ${
+            className={`flex-1 py-2 px-4 rounded-xl font-medium transition-colors min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
               type === "income"
-                ? "bg-green-600 text-white"
-                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                ? "bg-success text-white"
+                : "bg-border text-foreground hover:bg-muted/30"
             }`}
           >
             Доход
@@ -202,10 +231,10 @@ export function TransactionForm({
           <button
             type="button"
             onClick={() => setType("expense")}
-            className={`flex-1 py-2 px-4 rounded-lg font-medium transition-colors min-h-[44px] ${
+            className={`flex-1 py-2 px-4 rounded-xl font-medium transition-colors min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary ${
               type === "expense"
-                ? "bg-red-600 text-white"
-                : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                ? "bg-danger text-white"
+                : "bg-border text-foreground hover:bg-muted/30"
             }`}
           >
             Расход
@@ -221,28 +250,57 @@ export function TransactionForm({
           min="0.01"
           label="Сумма"
           value={amount}
-          onChange={(e) => setAmount(e.target.value)}
+          onChange={(event) => setAmount(event.target.value)}
           placeholder="0.00"
           required
         />
+        <div className="flex flex-wrap gap-2 mt-2">
+          {quickAmounts.map((value) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() => setQuickAmount(value)}
+              className="px-3 py-1.5 rounded-lg text-sm font-medium bg-border text-foreground hover:bg-muted/30 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            >
+              +{value.toLocaleString("ru-RU")}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Категория */}
       <div>
-        <label className="block text-sm font-medium mb-1">Категория</label>
-        <select
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
-          className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[44px]"
-          required
-        >
-          <option value="">Выберите категорию</option>
-          {filteredCategories.map((cat) => (
-            <option key={cat.id} value={cat.name}>
-              {cat.name}
-            </option>
-          ))}
-        </select>
+        <label className="block text-sm font-medium text-foreground mb-2">
+          Категория
+        </label>
+        <div className="flex flex-wrap gap-1.5" role="group">
+          {filteredCategories.map((cat) => {
+            const Icon = getCategoryIcon(cat.name);
+            const isSelected = category === cat.name;
+            return (
+              <button
+                key={cat.id}
+                type="button"
+                onClick={() => setCategory(cat.name)}
+                className={`inline-flex items-center gap-2 p-2 rounded-xl border-2 transition-all min-h-[36px] text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary shrink-0 ${
+                  isSelected
+                    ? "border-primary bg-primary/10"
+                    : "border-border bg-surface hover:border-muted"
+                }`}
+              >
+                <span
+                  className="flex items-center justify-center size-6 rounded-lg shrink-0 text-white"
+                  style={{ backgroundColor: cat.color }}
+                >
+                  <Icon className="size-3.5" aria-hidden />
+                </span>
+                <span className="text-sm font-medium text-foreground whitespace-nowrap">
+                  {cat.name}
+                </span>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Описание */}
@@ -251,7 +309,7 @@ export function TransactionForm({
           type="text"
           label="Описание"
           value={description}
-          onChange={(e) => setDescription(e.target.value)}
+          onChange={(event) => setDescription(event.target.value)}
           placeholder="Введите описание"
           required
         />
@@ -263,15 +321,31 @@ export function TransactionForm({
           type="date"
           label="Дата"
           value={date}
-          onChange={(e) => setDate(e.target.value)}
+          onChange={(event) => setDate(event.target.value)}
           required
         />
+        <div className="flex gap-2 mt-2">
+          <button
+            type="button"
+            onClick={() => setQuickDate(QUICK_DATE_TODAY)}
+            className="px-3 py-2 rounded-xl text-sm font-medium bg-border text-foreground hover:bg-muted/30 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          >
+            Сегодня
+          </button>
+          <button
+            type="button"
+            onClick={() => setQuickDate(QUICK_DATE_YESTERDAY)}
+            className="px-3 py-2 rounded-xl text-sm font-medium bg-border text-foreground hover:bg-muted/30 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          >
+            Вчера
+          </button>
+        </div>
       </div>
 
       {/* Ошибка */}
       {error && (
-        <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-          <p className="text-red-600 text-sm">{error}</p>
+        <div className="p-3 rounded-xl bg-danger/10 border border-danger/30">
+          <p className="text-danger text-sm">{error}</p>
         </div>
       )}
 

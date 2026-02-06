@@ -4,6 +4,7 @@ import {
   addTransaction,
   getBalance,
   getTransactions,
+  getTransactionsFiltered,
   resetStore,
 } from "./mock-store";
 
@@ -98,5 +99,64 @@ describe("mock-store", () => {
     expect(updatedBalance.total).toBe(
       initialBalance.total - expenseTransaction.amount
     );
+  });
+
+  describe("getTransactionsFiltered", () => {
+    it("returns all transactions when params are empty or default", () => {
+      const all = getTransactions();
+      const filteredEmpty = getTransactionsFiltered({});
+      const filteredAll = getTransactionsFiltered({ type: "all" });
+      const filteredExplicit = getTransactionsFiltered({
+        q: "",
+        type: "all",
+        sortBy: "date-desc",
+      });
+      expect(filteredEmpty).toHaveLength(all.length);
+      expect(new Set(filteredEmpty.map((t) => t.id))).toEqual(
+        new Set(all.map((t) => t.id))
+      );
+      expect(filteredAll).toHaveLength(all.length);
+      expect(filteredExplicit).toHaveLength(all.length);
+    });
+
+    it("filters by type income", () => {
+      const result = getTransactionsFiltered({ type: "income" });
+      expect(result.length).toBeGreaterThan(0);
+      expect(result.every((t) => t.type === "income")).toBe(true);
+    });
+
+    it("filters by type expense", () => {
+      const result = getTransactionsFiltered({ type: "expense" });
+      expect(result.length).toBeGreaterThan(0);
+      expect(result.every((t) => t.type === "expense")).toBe(true);
+    });
+
+    it("filters by search query in description and category", () => {
+      const result = getTransactionsFiltered({ q: "Продукты" });
+      expect(result.length).toBeGreaterThan(0);
+      expect(
+        result.every(
+          (t) =>
+            t.description.toLowerCase().includes("продукты") ||
+            t.category.toLowerCase().includes("продукты")
+        )
+      ).toBe(true);
+    });
+
+    it("sorts by amount descending", () => {
+      const result = getTransactionsFiltered({ sortBy: "amount-desc" });
+      expect(result.length).toBeGreaterThan(0);
+      for (let i = 1; i < result.length; i++) {
+        expect(result[i].amount).toBeLessThanOrEqual(result[i - 1].amount);
+      }
+    });
+
+    it("sorts by amount ascending", () => {
+      const result = getTransactionsFiltered({ sortBy: "amount-asc" });
+      expect(result.length).toBeGreaterThan(0);
+      for (let i = 1; i < result.length; i++) {
+        expect(result[i].amount).toBeGreaterThanOrEqual(result[i - 1].amount);
+      }
+    });
   });
 });

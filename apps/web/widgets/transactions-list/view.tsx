@@ -1,144 +1,127 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useCallback } from "react";
 
-import { EditTransactionWidget } from "@/widgets/edit-transaction";
+import { DeleteTransactionButton } from "@/features/delete-transaction";
 
-import { Transaction, TransactionCard } from "@/entities/transaction";
+import {
+  Transaction,
+  type TransactionCardActionsProps,
+  type TransactionCardVariant,
+} from "@/entities/transaction";
 
-import { deleteTransaction } from "@/shared/actions/transactions";
-import { Button, Dialog, Surface } from "@/shared/ui";
+import { groupTransactionsByDate } from "@/shared/lib/transaction-utils";
+import { Surface, TransactionCardSkeleton } from "@/shared/ui";
+
+import { getListClassName, useViewMode, type ViewMode } from "./lib";
+import { TransactionsListEmptyState } from "./ui/empty-state";
+import { TransactionGroup } from "./ui/transaction-group";
+import { ViewModeToggle } from "./ui/view-mode-toggle";
+
+const SKELETON_CARD_COUNT = 4;
 
 interface TransactionsListProps {
   transactions: Transaction[];
   isPending?: boolean;
-  onTransactionUpdated?: () => void;
-  onTransactionDeleted?: () => void;
+  onDeleteRequest?: (id: string) => void;
+  onEditRequest?: (transaction: Transaction) => void;
+  /** When set, cards use Link to this path + /:id/edit for edit (e.g. "/transactions") */
+  editPathPrefix?: string;
+  /** When list is empty and not filtered, clicking "Add first" calls this instead of navigating */
+  onAddClick?: () => void;
+  deletingId?: string | null;
+  isDeletePending?: boolean;
+  /** When true and list is empty, show "Ничего не найдено" (filtered empty state) */
+  emptyFiltered?: boolean;
+  /** Optional: controlled view mode */
+  viewMode?: ViewMode;
+  /** Optional: callback when view mode changes (e.g. to persist in parent) */
+  onViewModeChange?: (mode: ViewMode) => void;
+  /** Optional: when emptyFiltered, show "Сбросить фильтры" and call this */
+  onResetFilters?: () => void;
+  /** When false, show flat list (no date groups). Use when sorting by amount. Default true. */
+  groupByDate?: boolean;
 }
 
 export function TransactionsList({
   transactions,
   isPending: externalIsPending = false,
-  onTransactionUpdated,
-  onTransactionDeleted,
+  onDeleteRequest,
+  onEditRequest,
+  editPathPrefix,
+  onAddClick,
+  deletingId = null,
+  isDeletePending = false,
+  emptyFiltered = false,
+  viewMode: controlledViewMode,
+  onViewModeChange,
+  onResetFilters,
+  groupByDate = true,
 }: TransactionsListProps) {
-  const [editingTransaction, setEditingTransaction] =
-    useState<Transaction | null>(null);
-  const [deletingId, setDeletingId] = useState<string | null>(null);
-  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
-  const [isDeletingPending, startTransition] = useTransition();
+  const [viewMode, setViewMode] = useViewMode(
+    controlledViewMode,
+    onViewModeChange
+  );
 
-  const isPending = externalIsPending || isDeletingPending;
+  const renderActions = useCallback(
+    (props: TransactionCardActionsProps) => (
+      <DeleteTransactionButton {...props} />
+    ),
+    []
+  );
 
-  function handleDeleteClick(id: string) {
-    setConfirmDeleteId(id);
-  }
-
-  function handleDeleteConfirm() {
-    if (!confirmDeleteId) {
-      return;
-    }
-
-    const id = confirmDeleteId;
-    setConfirmDeleteId(null);
-    setDeletingId(id);
-
-    startTransition(async () => {
-      try {
-        await deleteTransaction(id);
-        onTransactionDeleted?.();
-      } catch (error) {
-        console.error("Failed to delete transaction:", error);
-        alert("Не удалось удалить транзакцию. Попробуйте еще раз.");
-      } finally {
-        setDeletingId(null);
-      }
-    });
-  }
-
-  function handleDeleteCancel() {
-    setConfirmDeleteId(null);
-  }
-
-  function handleEdit(transaction: Transaction) {
-    setEditingTransaction(transaction);
-  }
-
-  function handleEditClose() {
-    setEditingTransaction(null);
-  }
-
-  function handleEditSuccess() {
-    setEditingTransaction(null);
-    onTransactionUpdated?.();
-  }
-
-  // Защита от не-массивов
+  const isPending = externalIsPending || isDeletePending;
   const safeTransactions = Array.isArray(transactions) ? transactions : [];
+  const groups = groupByDate
+    ? groupTransactionsByDate(safeTransactions)
+    : [{ label: "Все", items: safeTransactions }];
 
   return (
-    <Surface as="section">
-      <h2 className="text-xl font-semibold mb-6">Транзакции</h2>
-      <div>
-        {isPending && (
-          <div className="absolute inset-0 bg-white/50 flex items-center justify-center z-10 rounded-lg">
-            <p className="text-gray-600">Обновление...</p>
+    <Surface as="section" className="rounded-2xl">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+        <h2 className="text-xl font-semibold text-foreground">Транзакции</h2>
+        <ViewModeToggle value={viewMode} onChange={setViewMode} />
+      </div>
+
+      <div className="relative min-h-[120px]">
+        {isPending && safeTransactions.length > 0 && (
+          <div className="absolute inset-0 bg-surface/80 backdrop-blur-[2px] flex items-center justify-center z-10 rounded-xl">
+            <p className="text-muted text-sm">Обновление...</p>
           </div>
         )}
-        {safeTransactions.length === 0 ? (
-          <p className="text-gray-500 text-center py-8">Нет транзакций</p>
-        ) : (
-          <ul className="space-y-2" role="list">
-            {safeTransactions.map((transaction) => (
-              <TransactionCard
-                key={transaction.id}
-                transaction={transaction}
-                isDeleting={deletingId === transaction.id}
-                onEdit={handleEdit}
-                onDelete={handleDeleteClick}
+
+        {isPending && safeTransactions.length === 0 ? (
+          <ul className={getListClassName(viewMode)} role="list" aria-busy>
+            {Array.from({ length: SKELETON_CARD_COUNT }, (_, i) => (
+              <TransactionCardSkeleton
+                key={i}
+                variant={viewMode as TransactionCardVariant}
               />
             ))}
           </ul>
+        ) : safeTransactions.length === 0 ? (
+          <TransactionsListEmptyState
+            emptyFiltered={emptyFiltered}
+            onResetFilters={onResetFilters}
+            onAddClick={onAddClick}
+          />
+        ) : (
+          <div className="space-y-8">
+            {groups.map((group) => (
+              <TransactionGroup
+                key={group.label}
+                group={group}
+                viewMode={viewMode}
+                editPathPrefix={editPathPrefix}
+                onEditRequest={onEditRequest}
+                onDeleteRequest={onDeleteRequest}
+                deletingId={deletingId}
+                renderActions={renderActions}
+              />
+            ))}
+          </div>
         )}
       </div>
-
-      {editingTransaction && (
-        <EditTransactionWidget
-          onClose={handleEditClose}
-          isOpen={!!editingTransaction}
-          onSuccess={handleEditSuccess}
-          transaction={editingTransaction}
-        />
-      )}
-
-      <Dialog
-        isOpen={!!confirmDeleteId}
-        onClose={handleDeleteCancel}
-        title="Подтверждение удаления"
-      >
-        <div className="space-y-4">
-          <p className="text-gray-700">
-            Вы уверены, что хотите удалить эту транзакцию? Это действие нельзя
-            отменить.
-          </p>
-          <div className="flex gap-3 pt-2">
-            <Button
-              onClick={handleDeleteConfirm}
-              variant="danger"
-              className="flex-1"
-            >
-              Удалить
-            </Button>
-            <Button
-              onClick={handleDeleteCancel}
-              variant="secondary"
-              className="flex-1"
-            >
-              Отмена
-            </Button>
-          </div>
-        </div>
-      </Dialog>
     </Surface>
   );
 }

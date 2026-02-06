@@ -17,20 +17,18 @@ export function Dialog({
   children,
   loading = false,
 }: DialogProps) {
-  // Закрытие по Escape (только если не загружается)
   useEffect(() => {
     if (!isOpen) {
       return;
     }
 
-    function handleEscape(e: KeyboardEvent) {
-      if (e.key === "Escape" && !loading) {
+    function handleEscape(event: KeyboardEvent) {
+      if (event.key === "Escape" && !loading) {
         onClose();
       }
     }
 
     document.addEventListener("keydown", handleEscape);
-    // Блокируем скролл body когда диалог открыт
     document.body.style.overflow = "hidden";
 
     return () => {
@@ -51,20 +49,21 @@ export function Dialog({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 transition-opacity duration-200"
       onClick={handleOverlayClick}
     >
       <div
-        className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto"
-        onClick={(e) => e.stopPropagation()}
+        className="bg-surface rounded-2xl shadow-lg max-w-xl w-full max-h-[90vh] overflow-y-auto transition-all duration-200"
+        onClick={(event) => event.stopPropagation()}
       >
         {title && (
-          <div className="flex items-center justify-between p-6 border-b">
-            <h2 className="text-xl font-semibold">{title}</h2>
+          <div className="flex items-center justify-between p-6 border-b border-border">
+            <h2 className="text-xl font-semibold text-foreground">{title}</h2>
             <button
+              type="button"
               onClick={handleOverlayClick}
               disabled={loading}
-              className="text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="text-muted hover:text-foreground transition-colors disabled:opacity-50 disabled:cursor-not-allowed rounded-lg p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
               aria-label="Закрыть"
             >
               <svg
@@ -83,12 +82,12 @@ export function Dialog({
             </button>
           </div>
         )}
-        <div className="p-6 relative">
+        <div className="p-6 relative text-foreground">
           {loading && (
-            <div className="absolute inset-0 bg-white/80 backdrop-blur-sm z-10 flex items-center justify-center rounded-lg">
+            <div className="absolute inset-0 bg-surface/80 backdrop-blur-sm z-10 flex items-center justify-center rounded-2xl">
               <div className="text-center">
-                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-2"></div>
-                <p className="text-gray-600 text-sm">Сохранение...</p>
+                <div className="inline-block animate-spin rounded-full h-8 w-8 border-2 border-border border-t-primary mb-2" />
+                <p className="text-muted text-sm">Сохранение...</p>
               </div>
             </div>
           )}

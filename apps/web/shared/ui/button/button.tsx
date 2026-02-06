@@ -3,16 +3,16 @@ import { ButtonHTMLAttributes, ReactNode } from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 
 const buttonVariants = cva(
-  "font-medium rounded-lg transition-colors min-h-[44px]",
+  "font-medium rounded-xl transition-colors min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background active:scale-[0.98]",
   {
     variants: {
       variant: {
-        primary: "bg-blue-600 text-white hover:bg-blue-700",
-        secondary: "bg-gray-200 text-gray-900 hover:bg-gray-300",
-        danger: "bg-red-600 text-white hover:bg-red-700",
+        primary: "bg-primary text-white hover:bg-primary-hover",
+        secondary: "bg-border text-foreground hover:bg-muted/30",
+        danger: "bg-danger text-white hover:bg-danger-hover",
       },
       size: {
-        sm: "px-3 py-1.5 text-sm",
+        sm: "px-3 py-1.5 text-sm rounded-lg",
         md: "px-4 py-2 text-base",
         lg: "px-6 py-3 text-lg",
       },

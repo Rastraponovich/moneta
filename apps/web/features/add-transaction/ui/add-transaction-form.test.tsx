@@ -5,8 +5,13 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { Transaction } from "@/entities/transaction";
 
 import { createTransaction } from "@/shared/actions/transactions";
+import { ToastProvider } from "@/shared/ui";
 
 import { AddTransactionForm } from "./add-transaction-form";
+
+function renderWithToast(ui: React.ReactElement) {
+  return render(<ToastProvider>{ui}</ToastProvider>);
+}
 
 // Мокируем Server Actions
 vi.mock("@/shared/actions/transactions", () => ({
@@ -71,7 +76,7 @@ describe("AddTransactionForm", () => {
   });
 
   it("renders form with all fields", async () => {
-    render(
+    renderWithToast(
       <AddTransactionForm
         onSuccess={mockOnSuccess}
         onCancel={mockOnCancel}
@@ -80,13 +85,13 @@ describe("AddTransactionForm", () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText("Доход")).toBeInTheDocument();
+      expect(screen.getByText("Продукты")).toBeInTheDocument();
     });
 
     expect(screen.getByText("Доход")).toBeInTheDocument();
     expect(screen.getByText("Расход")).toBeInTheDocument();
     expect(screen.getByPlaceholderText("0.00")).toBeInTheDocument();
-    expect(screen.getByRole("combobox")).toBeInTheDocument(); // select для категории
+    expect(screen.getByText("Продукты")).toBeInTheDocument();
     expect(screen.getByPlaceholderText("Введите описание")).toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: /добавить/i })
@@ -95,7 +100,7 @@ describe("AddTransactionForm", () => {
   });
 
   it("loads categories on mount", async () => {
-    render(<AddTransactionForm />);
+    renderWithToast(<AddTransactionForm />);
 
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalledWith("/api/categories");
@@ -103,45 +108,36 @@ describe("AddTransactionForm", () => {
   });
 
   it("filters categories by transaction type", async () => {
-    render(<AddTransactionForm />);
+    renderWithToast(<AddTransactionForm />);
 
     await waitFor(() => {
-      expect(screen.getByRole("combobox")).toBeInTheDocument();
+      expect(screen.getByText("Продукты")).toBeInTheDocument();
     });
 
-    const categorySelect = screen.getByRole("combobox") as HTMLSelectElement;
-    const options = Array.from(
-      categorySelect.querySelectorAll("option")
-    ) as HTMLOptionElement[];
-
-    // По умолчанию выбран тип "expense", должны быть только категории расходов
-    const expenseOptions = options.filter(
-      (opt) => opt.textContent === "Продукты"
-    );
-    expect(expenseOptions.length).toBeGreaterThan(0);
+    // По умолчанию выбран тип "expense", должны быть категории расходов
+    expect(screen.getByText("Продукты")).toBeInTheDocument();
   });
 
   it("updates category when transaction type changes", async () => {
     const user = userEvent.setup();
-    render(<AddTransactionForm />);
+    renderWithToast(<AddTransactionForm />);
 
     await waitFor(() => {
-      expect(screen.getByRole("combobox")).toBeInTheDocument();
+      expect(screen.getByText("Продукты")).toBeInTheDocument();
     });
 
     const incomeButton = screen.getByText("Доход");
     await user.click(incomeButton);
 
     await waitFor(() => {
-      const categorySelect = screen.getByRole("combobox") as HTMLSelectElement;
-      // После переключения на доход, должна быть выбрана категория дохода
-      expect(categorySelect.value).toBe("Зарплата");
+      // После переключения на доход отображаются категории дохода
+      expect(screen.getByText("Зарплата")).toBeInTheDocument();
     });
   });
 
   it("validates required fields", async () => {
     const user = userEvent.setup();
-    render(<AddTransactionForm onSuccess={mockOnSuccess} />);
+    renderWithToast(<AddTransactionForm onSuccess={mockOnSuccess} />);
 
     await waitFor(() => {
       expect(
@@ -158,7 +154,7 @@ describe("AddTransactionForm", () => {
 
   it("validates amount is greater than zero", async () => {
     const user = userEvent.setup();
-    render(<AddTransactionForm onSuccess={mockOnSuccess} />);
+    renderWithToast(<AddTransactionForm onSuccess={mockOnSuccess} />);
 
     await waitFor(() => {
       expect(screen.getByPlaceholderText("0.00")).toBeInTheDocument();
@@ -225,7 +221,7 @@ describe("AddTransactionForm", () => {
       } as Response);
     });
 
-    render(
+    renderWithToast(
       <AddTransactionForm
         onSuccess={mockOnSuccess}
         onLoadingChange={mockOnLoadingChange}
@@ -248,6 +244,9 @@ describe("AddTransactionForm", () => {
     await user.type(descriptionInput, "Тестовая транзакция");
     await user.clear(dateInput);
     await user.type(dateInput, "2026-01-25");
+
+    // Выбираем категорию "Продукты" (кнопка)
+    await user.click(screen.getByRole("button", { name: "Продукты" }));
 
     const submitButton = screen.getByRole("button", { name: /добавить/i });
     await user.click(submitButton);
@@ -299,7 +298,7 @@ describe("AddTransactionForm", () => {
       } as Response);
     });
 
-    render(
+    renderWithToast(
       <AddTransactionForm
         onSuccess={mockOnSuccess}
         onLoadingChange={mockOnLoadingChange}
@@ -322,6 +321,8 @@ describe("AddTransactionForm", () => {
     await user.type(descriptionInput, "Тестовая транзакция");
     await user.clear(dateInput);
     await user.type(dateInput, "2026-01-25");
+
+    await user.click(screen.getByRole("button", { name: "Продукты" }));
 
     const submitButton = screen.getByRole("button", { name: /добавить/i });
     await user.click(submitButton);
@@ -359,7 +360,7 @@ describe("AddTransactionForm", () => {
       } as Response);
     });
 
-    render(<AddTransactionForm onSuccess={mockOnSuccess} />);
+    renderWithToast(<AddTransactionForm onSuccess={mockOnSuccess} />);
 
     await waitFor(() => {
       expect(screen.getByPlaceholderText("0.00")).toBeInTheDocument();
@@ -382,9 +383,8 @@ describe("AddTransactionForm", () => {
     await user.click(submitButton);
 
     await waitFor(() => {
-      expect(
-        screen.getByText(/не удалось создать транзакцию/i)
-      ).toBeInTheDocument();
+      const errors = screen.getAllByText(/не удалось создать транзакцию/i);
+      expect(errors.length).toBeGreaterThan(0);
     });
 
     expect(mockOnSuccess).not.toHaveBeenCalled();
@@ -392,7 +392,7 @@ describe("AddTransactionForm", () => {
 
   it("calls onCancel when cancel button is clicked", async () => {
     const user = userEvent.setup();
-    render(
+    renderWithToast(
       <AddTransactionForm
         onCancel={mockOnCancel}
         onLoadingChange={mockOnLoadingChange}
@@ -438,7 +438,7 @@ describe("AddTransactionForm", () => {
       } as Response);
     });
 
-    render(<AddTransactionForm onSuccess={mockOnSuccess} />);
+    renderWithToast(<AddTransactionForm onSuccess={mockOnSuccess} />);
 
     await waitFor(() => {
       expect(screen.getByPlaceholderText("0.00")).toBeInTheDocument();
@@ -453,6 +453,8 @@ describe("AddTransactionForm", () => {
     await user.type(amountInput, "1000");
     await user.clear(descriptionInput);
     await user.type(descriptionInput, "Тестовая транзакция");
+
+    await user.click(screen.getByRole("button", { name: "Продукты" }));
 
     const submitButton = screen.getByRole("button", { name: /добавить/i });
     await user.click(submitButton);
