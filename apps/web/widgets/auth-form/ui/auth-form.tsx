@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 
 import { useAuth } from "@/features/auth";
 
+import { Button, Input } from "@/shared/ui";
+
 interface AuthFormProps {
   mode: "login" | "register";
 }
@@ -18,8 +20,8 @@ export function AuthForm({ mode }: AuthFormProps) {
   const { login, register } = useAuth();
   const router = useRouter();
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  async function handleSubmit(event: React.FormEvent) {
+    event.preventDefault();
     setError("");
 
     try {
@@ -37,53 +39,35 @@ export function AuthForm({ mode }: AuthFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-4 w-full max-w-md mx-auto">
       {mode === "register" && (
-        <div>
-          <label htmlFor="name" className="block text-sm font-medium mb-1">
-            Имя
-          </label>
-          <input
-            id="name"
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[44px]"
-            required
-          />
-        </div>
+        <Input
+          id="name"
+          type="text"
+          label="Имя"
+          value={name}
+          onChange={(event) => setName(event.target.value)}
+          required
+        />
       )}
-      <div>
-        <label htmlFor="email" className="block text-sm font-medium mb-1">
-          Email
-        </label>
-        <input
-          id="email"
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[44px]"
-          required
-        />
-      </div>
-      <div>
-        <label htmlFor="password" className="block text-sm font-medium mb-1">
-          Пароль
-        </label>
-        <input
-          id="password"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[44px]"
-          required
-        />
-      </div>
-      {error && <p className="text-red-600 text-sm">{error}</p>}
-      <button
-        type="submit"
-        className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors min-h-[44px]"
-      >
+      <Input
+        id="email"
+        type="email"
+        label="Email"
+        value={email}
+        onChange={(event) => setEmail(event.target.value)}
+        required
+      />
+      <Input
+        id="password"
+        type="password"
+        label="Пароль"
+        value={password}
+        onChange={(event) => setPassword(event.target.value)}
+        required
+      />
+      {error && <p className="text-danger text-sm">{error}</p>}
+      <Button type="submit" className="w-full">
         {mode === "login" ? "Войти" : "Зарегистрироваться"}
-      </button>
+      </Button>
     </form>
   );
 }

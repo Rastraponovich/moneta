@@ -1,8 +1,7 @@
 import { createContext, type ReactNode, useContext } from "react";
 
-import { useRouter } from "next/navigation";
-
 import { render, screen, waitFor } from "@testing-library/react";
+import { useRouter } from "next/navigation";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ProtectedRoute } from "./protected-route";

@@ -1,7 +1,8 @@
 "use client";
 
-import { PublicRoute } from "@/features/auth";
 import { LoginPage } from "@/views/login";
+
+import { PublicRoute } from "@/features/auth";
 
 export default function Login() {
   return (

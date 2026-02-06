@@ -12,7 +12,7 @@ describe("Button", () => {
   it("applies variant styles", () => {
     const { container } = render(<Button variant="danger">Delete</Button>);
     const button = container.querySelector("button");
-    expect(button?.className).toContain("bg-red-600");
+    expect(button?.className).toContain("bg-danger");
   });
 
   it("applies size styles", () => {

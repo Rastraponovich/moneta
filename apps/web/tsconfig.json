@@ -20,11 +20,13 @@
     ],
     "paths": {
       "@/*": ["./*"],
-      "@/shared/*": ["./shared/*"],
-      "@/entities/*": ["./entities/*"],
-      "@/features/*": ["./features/*"],
+      "@/app/*": ["./app/*"],
+      "@/views/*": ["./views/*"],
+      "@/layouts/*": ["./layouts/*"],
       "@/widgets/*": ["./widgets/*"],
-      "@/views/*": ["./views/*"]
+      "@/features/*": ["./features/*"],
+      "@/entities/*": ["./entities/*"],
+      "@/shared/*": ["./shared/*"]
     }
   },
   "include": [

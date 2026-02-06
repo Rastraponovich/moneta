@@ -2,6 +2,8 @@
 
 import { ReactNode } from "react";
 
+import { UserHeader } from "@/widgets/user-header";
+
 import { useAuth } from "../model/auth-context";
 
 interface AuthLoaderProps {
@@ -9,18 +11,23 @@ interface AuthLoaderProps {
 }
 
 export function AuthLoader({ children }: AuthLoaderProps) {
-  const { isLoading } = useAuth();
+  const { isLoading, user } = useAuth();
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-4"></div>
-          <p className="text-gray-600">Загрузка...</p>
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-2 border-border border-t-primary mb-4" />
+          <p className="text-muted">Загрузка...</p>
         </div>
       </div>
     );
   }
 
-  return <>{children}</>;
+  return (
+    <>
+      {user && <UserHeader />}
+      {children}
+    </>
+  );
 }

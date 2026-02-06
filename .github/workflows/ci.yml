@@ -2,14 +2,17 @@ name: CI
 
 on:
   push:
-    branches: [main, dev]
+    branches: [dev]
   pull_request:
     branches: [main, dev]
 
-jobs:
-  lint-and-test:
-    runs-on: ubuntu-latest
+permissions:
+  contents: read
+  pull-requests: write
 
+jobs:
+  ci:
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
@@ -19,6 +22,14 @@ jobs:
           node-version: "20"
           cache: "npm"
 
+      - name: Cache Turbo
+        uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: ${{ runner.os }}-turbo-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-turbo-
+
       - name: Install dependencies
         run: npm ci
 
@@ -26,11 +37,57 @@ jobs:
         run: npm run format:check
 
       - name: Lint
-        run: npm run lint || echo "Linting skipped"
-        continue-on-error: true
+        run: npm run lint
+
+      - name: Type check
+        run: npm run type-check
 
       - name: Build
         run: npm run build
 
-      - name: Test
-        run: npm run test
+      - name: Run tests with coverage
+        run: |
+          # Запускаем тесты для всех пакетов через turbo
+          npm run test
+          # Запускаем тесты с coverage для apps/web (для детального отчета)
+          cd apps/web && npm run test:coverage -- --run
+        env:
+          CI: true
+
+      - name: Upload coverage to PR
+        if: github.event_name == 'pull_request'
+        uses: davelosert/vitest-coverage-report-action@v1
+        with:
+          json-summary-path: coverage/coverage-summary.json
+          working-directory: apps/web
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload coverage artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: |
+            apps/web/coverage/
+            packages/*/coverage/
+          retention-days: 30
+          if-no-files-found: ignore
+
+      - name: Run security audit
+        run: npm audit --audit-level=moderate
+        continue-on-error: true
+
+      - name: Upload audit results
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-audit
+          path: npm-audit.json
+          retention-days: 7
+          if-no-files-found: ignore
+
+  lint-and-test:
+    runs-on: ubuntu-latest
+    needs: [ci]
+    steps:
+      - name: All checks passed
+        run: echo "All CI checks completed successfully"

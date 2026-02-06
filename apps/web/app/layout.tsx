@@ -2,10 +2,12 @@ import type { Metadata, Viewport } from "next";
 
 import { AuthLoader, AuthProvider } from "@/features/auth";
 
+import { ToastProvider } from "@/shared/ui";
+
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Finvam - Финансовый трекер",
+  title: "Moneta - Финансовый трекер",
   description: "Управление личными финансами",
 };
 
@@ -24,7 +26,9 @@ export default function RootLayout({
     <html lang="ru">
       <body>
         <AuthProvider>
-          <AuthLoader>{children}</AuthLoader>
+          <ToastProvider>
+            <AuthLoader>{children}</AuthLoader>
+          </ToastProvider>
         </AuthProvider>
       </body>
     </html>

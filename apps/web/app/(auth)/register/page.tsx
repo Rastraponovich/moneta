@@ -1,7 +1,8 @@
 "use client";
 
-import { PublicRoute } from "@/features/auth";
 import { RegisterPage } from "@/views/register";
+
+import { PublicRoute } from "@/features/auth";
 
 export default function Register() {
   return (
