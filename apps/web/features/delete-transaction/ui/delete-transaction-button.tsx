@@ -15,25 +15,23 @@ export interface DeleteTransactionButtonProps {
   onDelete: (id: string) => void;
 }
 
-export function DeleteTransactionButton({
-  transaction,
-  isDeleting,
-  onDelete,
-}: DeleteTransactionButtonProps) {
+export function DeleteTransactionButton(props: DeleteTransactionButtonProps) {
+  const { transaction, isDeleting, onDelete } = props;
+
   const aria = getTransactionAriaAttributes(transaction, formatCurrency);
 
   return (
     <div
       className="flex items-center gap-1 shrink-0"
-      onClick={(e) => e.stopPropagation()}
+      onClick={(event) => event.stopPropagation()}
     >
       <button
         type="button"
         disabled={isDeleting}
         aria-busy={isDeleting}
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
+        onClick={(event) => {
+          event.preventDefault();
+          event.stopPropagation();
           onDelete(transaction.id);
         }}
         {...aria.deleteButton}

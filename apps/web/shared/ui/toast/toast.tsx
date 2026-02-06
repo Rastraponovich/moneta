@@ -49,7 +49,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<ToastItem[]>([]);
 
   const removeToast = useCallback((id: string) => {
-    setToasts((prev) => prev.filter((t) => t.id !== id));
+    setToasts((prev) => prev.filter((current) => current.id !== id));
   }, []);
 
   const addToast = useCallback(
@@ -59,6 +59,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       duration = TOAST_DURATION
     ) => {
       const id = `toast-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
       setToasts((prev) => [...prev, { id, message, type, duration }]);
       if (duration > 0) {
         setTimeout(() => removeToast(id), duration);
@@ -75,13 +76,14 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   );
 }
 
-function ToastList({
-  toasts,
-  onDismiss,
-}: {
+interface ToastListProps {
   toasts: ToastItem[];
   onDismiss: (id: string) => void;
-}) {
+}
+
+function ToastList(props: ToastListProps) {
+  const { toasts } = props;
+
   if (toasts.length === 0) {
     return null;
   }

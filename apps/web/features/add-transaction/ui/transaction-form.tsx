@@ -22,25 +22,27 @@ interface TransactionFormProps {
   onLoadingChange?: (loading: boolean) => void;
 }
 
-export function TransactionForm({
-  initialTransaction,
-  onSuccess,
-  onCancel,
-  onLoadingChange,
-}: TransactionFormProps) {
+export function TransactionForm(props: TransactionFormProps) {
+  const { initialTransaction, onSuccess, onCancel, onLoadingChange } = props;
+
   const [amount, setAmount] = useState(
     initialTransaction?.amount.toString() || ""
   );
+
   const [type, setType] = useState<"income" | "expense">(
     initialTransaction?.type || "expense"
   );
+
   const [category, setCategory] = useState(initialTransaction?.category || "");
+
   const [description, setDescription] = useState(
     initialTransaction?.description || ""
   );
+
   const [date, setDate] = useState(
     initialTransaction?.date || new Date().toISOString().split("T")[0]
   );
+
   const [categories, setCategories] = useState<Category[]>([]);
   const [error, setError] = useState("");
   const [loadingCategories, setLoadingCategories] = useState(true);

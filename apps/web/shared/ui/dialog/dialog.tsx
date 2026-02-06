@@ -10,13 +10,9 @@ interface DialogProps {
   loading?: boolean;
 }
 
-export function Dialog({
-  isOpen,
-  onClose,
-  title,
-  children,
-  loading = false,
-}: DialogProps) {
+export function Dialog(props: DialogProps) {
+  const { isOpen, onClose, title, children, loading = false } = props;
+
   useEffect(() => {
     if (!isOpen) {
       return;
